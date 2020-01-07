@@ -1,0 +1,13 @@
+Create logo:
+    - middle package icon,
+    - around icons:
+        - webpack,
+        - babel,
+        - eslint,
+        - typescript,
+        - bestpractics (airbnb),
+        - jest,
+        - prettier,
+        - github,
+        - bitbucket,
+        - npm
