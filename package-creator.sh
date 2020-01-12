@@ -183,15 +183,15 @@ mkdir src/dumb
 GLOBIGNORE="*"
 if [ "$tool" = "Webpack+babel" ]
     then
-    # npm i -D @babel/cli @babel/core @babel/plugin-proposal-class-properties @babel/plugin-proposal-numeric-separator \
-    # @babel/plugin-proposal-object-rest-spread @babel/preset-env @types/jest @typescript-eslint/eslint-plugin \
-    # @typescript-eslint/parser babel-jest babel-loader clean-webpack-plugin eslint eslint-config-airbnb eslint-config-prettier \
-    # eslint-import-resolver-typescript eslint-plugin-import eslint-plugin-json eslint-plugin-jsx-a11y eslint-plugin-prettier \
-    # eslint-plugin-react jest prettier ts-jest ts-loader typescript webpack webpack-cli
+    npm i -D @babel/cli @babel/core @babel/plugin-proposal-class-properties @babel/plugin-proposal-numeric-separator \
+    @babel/plugin-proposal-object-rest-spread @babel/preset-env @types/jest @typescript-eslint/eslint-plugin \
+    @typescript-eslint/parser babel-jest babel-loader clean-webpack-plugin eslint eslint-config-airbnb eslint-config-prettier \
+    eslint-import-resolver-typescript eslint-plugin-import eslint-plugin-json eslint-plugin-jsx-a11y eslint-plugin-prettier \
+    eslint-plugin-react jest prettier ts-jest ts-loader typescript webpack webpack-cli
 
     # main files ------------------------------------------------------------------
     mainFiles=(".babelrc" ".gitignore" ".eslintignore" ".eslintrc" ".prettierrc"
-        "jest.json" "README.md" "tsconfig.json" "webpack.prod.js" "webpack.dev.js")
+        "jest.json" "README.md" "tsconfig.json" "webpack.prod.js" "webpack.dev.js" "replacer.js")
     main_files_lenght=${#mainFiles[@]}
     mainFilesTxt=("{
     \"presets\": [
@@ -345,7 +345,29 @@ module.exports = {
         filename: 'index.js',
         path: path.resolve(__dirname, 'lib')
     }
-};")
+};" "const fs = require('fs');
+
+const fileData = fs.readFileSync('package.json', 'utf8');
+let jsonData = JSON.parse(fileData);
+jsonData.description = '${description}';
+jsonData.author = '${author}';
+jsonData.main = 'lib/index.js';
+jsonData.types = 'lib/index.d.ts';
+jsonData.files = ['lib/**/*'];
+jsonData.scripts = {
+    test: 'jest --config jest.json',
+    lint: 'eslint . --ext .ts,.tsx',
+    format:'prettier --write \"src/**/*.ts\"',
+    dev: 'webpack --config webpack.dev.js',
+    build: 'webpack --config webpack.prod.js',
+    prepare: 'npm run dev && npm run build',
+    prepublishOnly: 'npm test && npm run lint',
+    preversion: 'npm run lint',
+    version: 'git add -A src',
+    postversion: 'git push && git push --tags'
+};
+const stringifyData = JSON.stringify(jsonData);
+fs.writeFileSync('package.json', stringifyData);")
 
     tsFilesTxt=("export * from './dumb/dumbPrint';"
     "export const dumbPrint = (foo: string, bar: string): string => {
@@ -374,22 +396,8 @@ describe('Test dumbPrint', () => {
     echo "${tsFilesTxt[0]}" > src/index.ts
     echo "${tsFilesTxt[1]}" > src/dumb/dumbPrint.ts
     echo "${tsFilesTxt[2]}" > src/__tests__/dumb.test.ts
-
-    # Replace package.json
-    # packageOrgScripts="\"scripts\":{\"test\": \"echo \\\"Error: no test specified\\\" && exit 1\"},"
-    # packageRplScripts="\"scripts\": {
-    #     \"test\": \"jest --config jest.json\",
-    #     \"lint\": \"eslint . --ext .ts,.tsx\",
-    #     \"format\": \"prettier --write \\\"src/**/*.ts\\\"\",
-    #     \"dev\": \"webpack --config webpack.dev.js\",
-    #     \"build\": \"webpack --config webpack.prod.js\",
-    #     \"prepare\": \"npm run dev && npm run build\",
-    #     \"prepublishOnly\": \"npm test && npm run lint\",
-    #     \"preversion\": \"npm run lint\",
-    #     \"version\": \"git add -A src\",
-    #     \"postversion\": \"git push && git push --tags\"
-    # },"
-    # sed -i "s/  ${packageOrgScripts}/${packageRplScripts}/" package.json
+    node replacer.js
+    rm replacer.js
 
 else
     # npm i -D
@@ -401,6 +409,19 @@ else
 fi
 
 
+# END MESSAGE
+echo -e "\n ${LGREEN}Done! Enjoy the coding :)${NC}\n"
+echo -ne "\a"
+
+echo -e "${LBLUE}Go to folder: ${YELLOW} \"cd ${packageName}/\"
+${LBLUE}Build dev package: ${YELLOW} \"npm run dev\"
+${LBLUE}Build production package: ${YELLOW} \"npm run build\"
+${LBLUE}Test code: ${YELLOW} \"npm run test\"
+${LBLUE}Lint code: ${YELLOW} \"npm run lint\"
+${LBLUE}Format code: ${YELLOW} \"npm run format\"
+${LBLUE}Publish package: ${YELLOW} \"npm publish\"
+${LBLUE}Prepare new version: ${YELLOW} \"npm version patch\" \n"
+
 
 
 
@@ -408,11 +429,11 @@ fi
 
 
 # Remove this after end
-echo -e "ALL VARIABLES:
-$packageName
-$description
-$author
-$serv
-$privMSG
-$priv
-$tool"
+# echo -e "ALL VARIABLES:
+# $packageName
+# $description
+# $author
+# $serv
+# $privMSG
+# $priv
+# $tool"
