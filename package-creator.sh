@@ -96,9 +96,9 @@ if [ "$serv" != "None" ]
 fi
 
 # WEBPACK+BABEL / BABEL
-echo -e "\n${LCYAN}Select tools${NC}"
+echo -e "\n${LCYAN}Select configuration${NC}"
 PS3="Please enter your choice: "
-options=("Webpack+babel" "Babel")
+options=("Webpack+babel" "Babel" "Node")
 select opt in "${options[@]}"
 do
     case $opt in
@@ -107,6 +107,10 @@ do
             break
             ;;
         "Babel")
+            tool=$opt
+            break
+            ;;
+        "Node")
             tool=$opt
             break
             ;;
@@ -388,7 +392,8 @@ describe('Test dumbPrint', () => {
     node replacer.js
     rm replacer.js
 
-else
+elif [ "$tool" = "Babel" ]
+    then
     npm i -D @babel/cli @babel/core @babel/plugin-proposal-class-properties @babel/plugin-proposal-numeric-separator \
     @babel/plugin-proposal-object-rest-spread @babel/preset-env @babel/preset-typescript @types/jest \
     @typescript-eslint/eslint-plugin @typescript-eslint/parser eslint eslint-config-airbnb eslint-config-prettier \
@@ -522,6 +527,146 @@ jsonData.scripts['type-check'] = 'tsc --noEmit';
 jsonData.scripts['type-check:watch'] = 'npm run type-check -- --watch';
 jsonData.scripts['build:types'] = 'tsc --emitDeclarationOnly';
 jsonData.scripts['build:js'] = 'babel src --out-dir lib --extensions \".ts,.tsx\" --source-maps inline';
+const stringifyData = JSON.stringify(jsonData);
+fs.writeFileSync('package.json', stringifyData);")
+
+    tsFilesTxt=("export * from './dumb/dumbPrint';"
+    "export const dumbPrint = (foo: string, bar: string): string => {
+    return \`\${foo}-\${bar}\`;
+};" "import * as dumb from '../index';
+
+describe('Test dumbPrint', () => {
+    test('Should return string = Foo-Bar', () => {
+        expect(dumb.dumbPrint('Foo', 'Bar')).toStrictEqual('Foo-Bar');
+    });
+});")
+
+    # CREATE FILES ----------------------------------------------------------------------
+    for i in `seq 0 $[main_files_lenght-1]`
+    do
+        touch ${mainFiles[$i]}
+    done
+    touch src/index.ts src/dumb/dumbPrint.ts src/__tests__/dumb.test.ts
+
+    # ADDING FILE CONTENT ---------------------------------------------------------------
+    # add content to main files
+    for i in `seq 0 $[main_files_lenght-1]`
+    do
+        echo "${mainFilesTxt[$i]}" > ${mainFiles[$i]}
+    done
+    echo "${tsFilesTxt[0]}" > src/index.ts
+    echo "${tsFilesTxt[1]}" > src/dumb/dumbPrint.ts
+    echo "${tsFilesTxt[2]}" > src/__tests__/dumb.test.ts
+    node replacer.js
+    rm replacer.js
+else
+    npm i -D @types/jest @typescript-eslint/eslint-plugin @typescript-eslint/parser eslint-config-prettier \
+    eslint-import-resolver-typescript eslint-plugin-import eslint-plugin-json eslint-plugin-prettier jest prettier ts-jest typescript
+
+    # main files
+    mainFiles=(".eslintignore" ".eslintrc.json" ".gitignore" ".prettierrc" "jest.json"
+        "README.md" "tsconfig.json" "replacer.js" )
+    main_files_lenght=${#mainFiles[@]}
+
+    mainFilesTxt=("lib/
+node_modules
+src/__tests__"
+    "{
+    \"parser\": \"@typescript-eslint/parser\",
+    \"extends\": [
+        \"plugin:@typescript-eslint/recommended\",
+        \"prettier\"
+    ],
+    \"plugins\": [\"prettier\", \"@typescript-eslint\"],
+    \"settings\": {
+        \"import/parsers\": {
+            \"@typescript-eslint/parser\": [\".ts\"]
+        },
+        \"import/resolver\": {
+            \"typescript\": {}
+        }
+    },
+    \"rules\": {
+        \"prettier/prettier\": \"warn\",
+        \"@typescript-eslint/no-unused-vars\":\"warn\",
+        \"@typescript-eslint/no-console\": \"off\",
+        \"@typescript-eslint/func-names\": \"off\",
+        \"@typescript-eslint/no-process-exit\": \"off\",
+        \"@typescript-eslint/object-shorthand\": \"off\",
+        \"@typescript-eslint/class-methods-use-this\": \"off\",
+        \"import/prefer-default-export\": \"off\",
+        \"no-param-reassign\": \"off\",
+        \"no-whitespace-before-property\":\"off\",
+        \"import/no-extraneous-dependencies\": [2, { \"devDependencies\": [\"**/spec.ts\", \"**/test.ts\"] }],
+        \"import/extensions\": \"off\"
+    }
+}"
+    ".vscode
+node_modules
+/lib" "{
+    \"printWidth\": 120,
+    \"trailingComma\": \"none\",
+    \"singleQuote\": true,
+    \"tabWidth\": 4
+}" "{
+    \"transform\": {
+      \"^.+\\\\.(t|j)s?$\": \"ts-jest\"
+    },
+    \"testRegex\": \"(/__tests__/.*|(\\\\.|/)(test|spec))\\\\.(js?|ts?)$\",
+    \"moduleFileExtensions\": [\"ts\", \"js\", \"json\", \"node\"],
+    \"collectCoverage\": true,
+    \"coverageDirectory\": \"coverage\",
+    \"collectCoverageFrom\": [
+        \"**/src/*.{ts,js}\",
+        \"!**/node_modules/**\",
+        \"!**/lib/**\"
+    ],
+    \"coveragePathIgnorePatterns\": [\"<rootDir>/lib/\", \"<rootDir>/node_modules/\"],
+    \"coverageReporters\": [\"json-summary\", \"lcov\", \"text\", \"clover\"]
+}" "## ${packageName}
+${description}
+### Installation
+
+### Run
+
+### Author:
+${author}"
+    "{
+    \"compilerOptions\": {
+        \"target\": \"es5\",
+        \"module\": \"commonjs\",
+        \"declaration\": true,
+        \"allowJs\": true,
+        \"outDir\": \"./lib\",
+        \"strict\": true,
+        \"noImplicitAny\": true,
+        \"noUnusedParameters\": true,
+        \"noImplicitReturns\": true,
+        \"noUnusedLocals\": true
+    },
+    \"include\": [\"src\"],
+    \"exclude\": [\"node_modules\", \"**/__tests__/*\"]
+}"
+ "const fs = require('fs');
+
+const fileData = fs.readFileSync('package.json', 'utf8');
+let jsonData = JSON.parse(fileData);
+jsonData.description = '${description}';
+jsonData.author = '${author}';
+jsonData.main = 'lib/index.js';
+jsonData.types = 'lib/index.d.ts';
+jsonData.files = ['lib/**/*'];
+jsonData.scripts = {
+    test: 'jest --config jest.json',
+    lint: 'eslint . --ext .ts',
+    format: 'prettier --write \"src/**/*.ts\"',
+    build: 'tsc',
+    prepare: 'npm run build',
+    prepublishOnly: 'npm test && npm run lint',
+    preversion: 'npm run lint',
+    version: 'npm run format && git add -A src',
+    postversion: 'git push && git push --tags'
+};
 const stringifyData = JSON.stringify(jsonData);
 fs.writeFileSync('package.json', stringifyData);")
 
