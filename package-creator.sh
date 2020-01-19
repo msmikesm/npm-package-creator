@@ -258,7 +258,7 @@ webpack.prod.js"
         \"!**/lib/**\"
     ],
     \"coveragePathIgnorePatterns\": [\"<rootDir>/lib/\", \"<rootDir>/node_modules/\"],
-    \"coverageReporters\": [\"json\", \"lcov\", \"text\", \"clover\"]
+    \"coverageReporters\": [\"json-summary\", \"lcov\", \"text\", \"clover\"]
 }" "## ${packageName}
 ${description}
 ### Installation
@@ -471,7 +471,7 @@ node_modules
         \"!**/lib/**\"
     ],
     \"coveragePathIgnorePatterns\": [\"<rootDir>/lib/\", \"<rootDir>/node_modules/\"],
-    \"coverageReporters\": [\"json\", \"lcov\", \"text\", \"clover\"]
+    \"coverageReporters\": [\"json-summary\", \"lcov\", \"text\", \"clover\"]
 }" "## ${packageName}
 ${description}
 ### Installation
