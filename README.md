@@ -66,4 +66,4 @@ After creating a new project, you have ready-made commands:
 
 If I helped you, you can help me with my work. 🍻
 
-<img src="https://img.shields.io/badge/-Donate--me-blue?color=00457C&logo=paypal&?link=http://paypal.me/msmikesm&style=for-the-badge">
+<a target="_blank" rel="noopener noreferrer" href="https://paypal.me/msmikesm"><img src="https://img.shields.io/badge/-Donate--me-blue?color=00457C&logo=paypal&style=for-the-badge"></a>
